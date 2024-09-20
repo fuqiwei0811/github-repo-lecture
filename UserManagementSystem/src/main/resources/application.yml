@@ -1,0 +1,15 @@
+#localhost:8081
+server:
+  port: 8081
+
+#DBについての情報はDataSourceConfig.javaにて設定を行う
+mybatis:
+  mapper-locations: classpath:mapping/*.xml
+  type-aliases-package: com.winter.model
+
+#pagehelper
+pagehelper:
+    helperDialect: mysql
+    reasonable: true
+    supportMethodsArguments: true
+    params: count=countSql
