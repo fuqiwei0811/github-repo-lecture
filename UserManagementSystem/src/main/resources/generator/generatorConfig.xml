@@ -3,7 +3,7 @@
         PUBLIC "-//mybatis.org//DTD MyBatis Generator Configuration 1.0//EN"
         "http://mybatis.org/dtd/mybatis-generator-config_1_0.dtd">
 <generatorConfiguration>
-    <!-- データベースドライバ: ローカルハードディスク上のデータベースドライバパッケージを選択してください -->
+    <!-- 1データベースドライバ: ローカルハードディスク上のデータベースドライバパッケージを選択してください -->
     <classPathEntry  location="C:\Users\Administrator\.m2\repository\com\mysql\mysql-connector-j\8.0.33\mysql-connector-j-8.0.33.jar"/>
     <context id="DB2Tables"  targetRuntime="MyBatis3">
         <commentGenerator>
