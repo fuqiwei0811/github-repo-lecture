@@ -10,21 +10,21 @@ import com.kyh.system.entity.User;
 @Component
 @Mapper
 public interface UserMapper {
-	int deleteByPrimaryKey(Integer userId);
 
-	int insert(User record);
+	User selectByPrimaryKey(Integer no);
 
-	int insertSelective(User record);
+	User selectByUserIdAndPassword(User user);
+	
+	int checkExistenceByUserId(User user);
 
-	User selectByPrimaryKey(Integer userId);
+	int getUsernumber();
 
-	int updateByPrimaryKeySelective(User record);
+	int deleteByPrimaryKey(Integer no);
 
-	int updateByPrimaryKey(User record);
+	int insertSelective(User user);
+
+	int updateByPrimaryKeySelective(User user);
 
 	List<User> selectAllUser();
 
-	User selectByKeyAndPassword(User user);
-
-	int getUsernumber();
 }

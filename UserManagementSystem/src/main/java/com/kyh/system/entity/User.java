@@ -1,28 +1,39 @@
 package com.kyh.system.entity;
 
 public class User {
-    private Integer userId;
+	
+	private Integer no;
+	
+    private String userid;
 
-    private String userName;
+    private String username;
 
     private String password;
 
     private String phone;
-
-    public Integer getUserId() {
-        return userId;
+    
+    public Integer getNo() {
+        return no;
     }
 
-    public void setUserId(Integer userId) {
-        this.userId = userId;
+    public void setNo(Integer no) {
+        this.no = no;
     }
 
-    public String getUserName() {
-        return userName;
+    public String getUserid() {
+        return userid;
     }
 
-    public void setUserName(String userName) {
-        this.userName = userName == null ? null : userName.trim();
+    public void setUserid(String userid) {
+        this.userid = userid;
+    }
+
+    public String getUsername() {
+        return username;
+    }
+
+    public void setUsername(String username) {
+        this.username = username == null ? null : username.trim();
     }
 
     public String getPassword() {

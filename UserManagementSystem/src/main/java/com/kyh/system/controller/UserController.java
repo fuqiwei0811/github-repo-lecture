@@ -5,13 +5,10 @@ import java.util.List;
 import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -25,235 +22,193 @@ import com.kyh.system.service.UserService;
 @Controller
 @RequestMapping(value = "/user")
 public class UserController {
-    static final int pageSize = 10;
-    @Autowired
-    private UserService userService;
+	static final int pageSize = 10;
 
-    @ResponseBody
-    @RequestMapping(value = "/add", produces = {"application/json;charset=UTF-8"})
-    public int addUser(User user) {
-        return userService.addUser(user);
-    }
+	@Autowired
+	private UserService userService;
 
-    @ResponseBody
-    @RequestMapping(value = "/all", produces = {"application/json;charset=UTF-8"})
-    public Object findAllUser(HttpServletRequest request, HttpServletResponse response) {
-        String pageNum = request.getParameter("pageNum");
-        int pageNumber = 0;
-        if (null == pageNum) {
-            pageNumber = 1;
-        }
+	// ユーザー管理のタグ
+	@RequestMapping(value = "/userinfomation", method = { RequestMethod.POST, RequestMethod.GET })
+	public String userinfomation(HttpSession session) {
+		return "/common/information";
+	}
 
-        return userService.findAllUser(pageNumber, pageSize);
-    }
+	// 個人情報のタグ
+	@RequestMapping(value = "/myInfo", method = { RequestMethod.POST, RequestMethod.GET })
+	public ModelAndView myInfo(HttpSession session) {
+		ModelAndView model = new ModelAndView();
+		User user = (User) session.getAttribute("user");
+		User userLogined = userService.getUserByPrimaryKey(user.getNo());
+		session.setAttribute("user", userLogined);
+		model.addObject("user", userLogined);
+		model.setViewName("/common/myInfo");
+		return model;
+	}
 
-    @ResponseBody
-    @RequestMapping(value = "delete/{key}", produces = {"application/json;charset=UTF-8"})
-    public int deleteUser(@PathVariable("key") int key) {
-        return userService.delete(key);
-    }
+	//ユーザー一覧を初期化する際、ユーザー全量の情報とその数をマップに入れておく
+	@PostMapping(value = "/userinforlist")
+	@ResponseBody
+	public Map<String, Object> userinforlist(HttpServletRequest request) {
+		int page = Integer.parseInt(request.getParameter("page"));
+		int pageSize = Integer.parseInt(request.getParameter("rows")); // pageSize
+		int startRecord = (page - 1) * pageSize + 1;
+		int total = userService.getUsernumber();
+		List<User> userinforlist = userService.findAllUser(startRecord, pageSize);
+		Map<String, Object> resultMap = new HashMap<String, Object>();
+		resultMap.put("total", total - 1);
+		resultMap.put("rows", userinforlist);
+		return resultMap;
+	}
 
-    // ユーザー情報の更新
-    @ResponseBody
-    @RequestMapping(value = "/update", produces = {"application/json;charset=UTF-8"})
-    public int update(User user) {
-        return userService.update(user);
-    }
+	// 個人情報更新時（パスワードの更新は右上）
+	@PostMapping(value = "/updateMyInfo")
+	@ResponseBody
+	public Map<String, String> updateMyInfo(
+			@RequestParam("no") Integer no,
+			@RequestParam("username") String username,
+			@RequestParam("phone") String phone, HttpSession session) {
+		Map<String, String> result = new HashMap<>();
 
-    // ユーザー情報管理
-    @RequestMapping(value = "/userinfomation", method = {RequestMethod.POST, RequestMethod.GET})
-    public String userinfomation(HttpSession session) {
-        return "/common/information";
-    }
+		User user = new User();
+		user.setNo(no);
+		user.setUsername(username);
+		user.setPhone(phone);
+		try {
+			userService.update(user);
+			session.setAttribute("user", userService.getUserByPrimaryKey(no));
+			result.put("success", "true");
+			return result;
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return result;
+	}
 
-    /*
-       ユーザー情報リスト
-    */
-    @PostMapping(value = "/userinforlist")
-    @ResponseBody
-    public Map userinforlist(HttpServletRequest request) {
-        int page = Integer.parseInt(request.getParameter("page"));
-        int pageSize = Integer.parseInt(request.getParameter("rows")); // pageSize
-        int startRecord = (page - 1) * pageSize + 1;
-        int total = userService.getUsernumber();
-        List<User> userinforlist = userService.findAllUser(startRecord, pageSize);
-        Map resultMap = new HashMap();
-        resultMap.put("total", total - 1);
-        resultMap.put("rows", userinforlist);
-        return resultMap;
-    }
+	// ユーザー情報の追加
+	@PostMapping(value = "/add")
+	@ResponseBody
+	public Map<String, String> saveUsers(
+			@RequestParam("userid") String userid,
+			@RequestParam("username") String username,
+			@RequestParam("password") String password,
+			@RequestParam("phone") String phone, HttpSession session) {
 
-    /*
-    ユーザー情報画面に遷移
-    */
-    @GetMapping(value = "/info")
-    public String stuinfor() {
-        return "/common/information";
-    }
+		Map<String, String> map = new HashMap<>();
+		User user = new User();
+		user.setUserid(userid);
+		user.setPassword(password);
+		user.setUsername(username);
+		user.setPhone(phone);
+		try {
+			if (userService.checkExistenceByUserId(user) > 0) {
+				map.put("msg", "ユーザーは既に存在しているため、追加できません。");
+			} else {
+				userService.addUser(user);
+				map.put("success", "true");
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return map;
+	}
 
-    @PostMapping(value = "/update") // 新規ユーザーと変更されたユーザー情報を保存
-    @ResponseBody
-    public Map<String, String> update(@RequestParam("userId") String userId,
-                                      @RequestParam("userName") String userName,
-                                      @RequestParam("password") String password,
-                                      @RequestParam("phone") String phone, HttpSession session) {
+	// ユーザー情報の削除
+	@PostMapping(value = "/delete")
+	@ResponseBody
+	public Map<String, String> removeUsers(@RequestParam("no") Integer no, HttpSession session) {
+		Map<String, String> result = new HashMap<>();
+		if (((User) session.getAttribute("user")).getNo().equals(no)) {
+			result.put("msg", "現在ロングインしているユーザーは削除できません。");
+			return result;
+		}
+		try {
+			userService.delete(no);
+			result.put("success", "true");
+			System.out.println("削除No: " + no);
+		} catch (Exception e) {
+			e.printStackTrace();
+			result.put("msg", "エラーが発生しました。");
+		}
+		return result;
+	}
 
-        Map<String, String> map = new HashMap<>();
-        User user = new User();
-        user.setUserId(Integer.parseInt(userId));
-        user.setPassword(password);
-        user.setUserName(userName);
-        user.setPhone(phone);
-        try {
-            userService.update(user);
-            map.put("success", "true");
-        } catch (Exception e) {
-            e.printStackTrace();
-            map.put("msg", "情報を確認し、ログイン名が一意であることを確認してください");
-        }
-        return map;
-    }
+	// ユーザー情報の更新
+	@PostMapping(value = "/update")
+	@ResponseBody
+	public Map<String, String> update(
+			@RequestParam("no") Integer no,
+			@RequestParam("username") String username,
+			@RequestParam("password") String password,
+			@RequestParam("phone") String phone, HttpSession session) {
 
-    @RequestMapping(value = "/updateMyInfo", method = {RequestMethod.POST, RequestMethod.GET}) // 新規ユーザーと変更されたユーザー情報を保存
-    @ResponseBody
-    public ModelAndView updateMyInfo(@RequestParam("userId") String userId,
-                                     @RequestParam("userName") String userName,
-                                     @RequestParam("password") String password,
-                                     @RequestParam("phone") String phone, HttpSession session) {
-        ModelAndView model = new ModelAndView();
-        User user = new User();
-        user.setUserId(Integer.parseInt(userId));
-        user.setPassword(password);
-        user.setUserName(userName);
-        user.setPhone(phone);
-        try {
-            userService.update(user);
-            model.addObject("message", "変更成功");
-            model.setViewName("/common/success");
-            return model;
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        model.addObject("message", "変更失敗");
-        model.setViewName("/common/error");
-        return model;
-    }
+		Map<String, String> map = new HashMap<>();
+		User user = new User();
+		user.setNo(no);
+		user.setPassword(password);
+		user.setUsername(username);
+		user.setPhone(phone);
+		try {
+			userService.update(user);
+			map.put("success", "true");
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return map;
+	}
 
-    @PostMapping(value = "/save_users") // 新規ユーザーと変更されたユーザー情報を保存
-    @ResponseBody
-    public Map<String, String> saveUsers(@RequestParam("userName") String userName,
-                                         @RequestParam("password") String password,
-                                         @RequestParam("phone") String phone, HttpSession session) {
+	// 右上のパスワード変更機能
+	@PostMapping(value = "/modifypassword")
+	@ResponseBody
+	public Map<String, String> modifypassword(
+			@RequestParam("no") int no,
+			@RequestParam("oldpassword") String oldpassword,
+			@RequestParam("newpassword1") String newpassword1,
+			@RequestParam("newpassword2") String newpassword2, HttpSession session) {
+		Map<String, String> result = new HashMap<>();
+		User userLogined = (User) session.getAttribute("user");
+		if (oldpassword == null || "".equals(oldpassword)) {
+			result.put("msg", "現在のパスワードを入力してください。");
+			return result;
+		} else if (!userLogined.getPassword().equals(oldpassword)) {
+			result.put("msg", "現在のパスワードが正しくありません");
+			return result;
+		} else if (newpassword1 == null || "".equals(newpassword1)) {
+			result.put("msg", "新しいパスワードを入力してください。");
+			return result;
+		} else if (newpassword2 == null || "".equals(newpassword2)) {
+			result.put("msg", "確認用パスワードを入力してください。");
+			return result;
+		} else if (!newpassword2.equals(newpassword1)) {
+			result.put("msg", "２回入力したパスワードが一致しません。");
+			return result;
+		} else if (userLogined.getPassword().equals(newpassword1)) {
+			result.put("msg", "前回のパスワードと同じものは設定できません。");
+			return result;
+		}
 
-        Map<String, String> map = new HashMap<>();
-        User user = new User();
-        user.setPassword(password);
-        user.setUserName(userName);
-        user.setPhone(phone);
-        try {
-            userService.addUser(user);
-            map.put("success", "true");
-        } catch (Exception e) {
-            e.printStackTrace();
-            map.put("msg", "情報を確認し、ログイン名が一意であることを確認してください");
-        }
-        return map;
-    }
+		User user = new User();
+		user.setNo(no);
+		user.setPassword(newpassword2);
+		try {
+			userService.update(user);
+			
+			session.setAttribute("user", userService.getUserByPrimaryKey(no));
+			
+			result.put("success", "true");
+			return result;
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		result.put("msg", "変更が失敗しました。");
+		return result;
+	}
 
-    /***
-     * ユーザー削除 マップ形式で返す
-     *
-     */
-    @PostMapping(value = "/remove_users") // ユーザー削除
-    @ResponseBody
-    public Map<String, String> removeUsers(@RequestParam("id") Integer id, HttpSession session) {
-        Map<String, String> result = new HashMap<>();
-        if (((User) session.getAttribute("user")).getUserId().equals(id)) {
-            result.put("msg", "不正な操作！自分を削除することはできません！");
-            return result;
-        }
-        try {
-            userService.delete(id);
-            result.put("success", "true");
-            System.out.println("削除Id: " + id);
-        } catch (Exception e) {
-            e.printStackTrace();
-            result.put("msg", "エラーが発生しました。");
-        }
-        return result;
-    }
-
-    /***
-     * 個人情報の変更
-     */
-    @RequestMapping(value = "myInfo", method = {RequestMethod.POST, RequestMethod.GET})
-    public ModelAndView myInfo(HttpSession session) {
-        ModelAndView model = new ModelAndView();
-        User user = (User) session.getAttribute("user");
-        Integer id = user.getUserId();
-        user.setUserId(id);
-        User logUser = userService.getUserById(user);
-        session.setAttribute("user", logUser);
-        model.addObject("user", logUser);
-        model.setViewName("/common/myInfo");
-        return model;
-    }
-
-    /***
-     * パスワード変更
-     */
-    @RequestMapping(value = "/modifypassword", method = {RequestMethod.POST, RequestMethod.GET}) // 新規ユーザーと変更されたユーザー情報を保存
-    @ResponseBody
-    public ModelAndView modifypassword(@RequestParam("userId") String userId,
-                                       @RequestParam("oldpassword") String oldpassword,
-                                       @RequestParam("newpassword1") String newpassword1,
-                                       @RequestParam("newpassword2") String newpassword2, HttpSession session) {
-        ModelAndView model = new ModelAndView();
-        User Loginuser = (User) session.getAttribute("user");
-        if (oldpassword == null || "".equals(oldpassword)) {
-            model.addObject("message", "初期パスワードは空にできません");
-            model.setViewName("/common/success");
-            return model;
-        } else if (newpassword1 == null || "".equals(newpassword1)) {
-            model.addObject("message", "新しいパスワードは空にできません");
-            model.setViewName("/common/success");
-            return model;
-        } else if (newpassword2 == null || "".equals(newpassword2)) {
-            model.addObject("message", "確認用パスワードは空にできません");
-            model.setViewName("/common/success");
-            return model;
-        } else if (!newpassword2.equals(newpassword1)) {
-            model.addObject("message", "パスワードが一致しません");
-            model.setViewName("/common/success");
-            return model;
-        } else if (!Loginuser.getPassword().equals(oldpassword)) {
-            model.addObject("message", "初期パスワードが正しくありません");
-            model.setViewName("/common/success");
-            return model;
-        }
-
-        User user = new User();
-        user.setUserId(Integer.parseInt(userId));
-        user.setPassword(newpassword2);
-        try {
-            userService.update(user);
-            model.addObject("message", "変更成功");
-            model.setViewName("/common/success");
-            return model;
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        model.addObject("message", "変更失敗");
-        model.setViewName("/common/success");
-        return model;
-    }
-
-    @RequestMapping(value = "/exit", method = {RequestMethod.POST, RequestMethod.GET})
-    public ModelAndView exit(HttpSession session) {
-        session.removeAttribute("user");
-        ModelAndView model = new ModelAndView();
-        model.setViewName("redirect:/login/");
-        return model;
-    }
-
+	// ログアウト
+	@RequestMapping(value = "/exit", method = { RequestMethod.POST, RequestMethod.GET })
+	public ModelAndView exit(HttpSession session) {
+		session.removeAttribute("user");
+		ModelAndView model = new ModelAndView();
+		model.setViewName("redirect:/login/");
+		return model;
+	}
 }
