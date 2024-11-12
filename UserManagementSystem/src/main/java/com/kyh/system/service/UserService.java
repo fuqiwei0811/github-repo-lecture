@@ -6,19 +6,19 @@ import com.kyh.system.model.User;
 
 public interface UserService {
 
-	int addUser(User user);
-
-	List<User> findAllUser(int pageNum, int pageSize);
-
-	int delete(int no);
-
-	int update(User user);
-
 	public User getUserByUserIdAndPassword(User user);
 	
 	public int checkExistenceByUserId(User user);
 
 	public User getUserByPrimaryKey(int no);
 
-	public int getUsernumber();
+	List<User> selectAll(int pageNum, int pageSize);
+
+	int delete(int no);
+	
+	int insert(User user);
+
+	int update(User user);
+
+	public int getCount();
 }

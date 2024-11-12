@@ -21,17 +21,8 @@ public class UserServiceImpl implements UserService {
 	 * ユーザーを追加する
 	 * */
 	@Override
-	public int addUser(User user) {
-		return userMapper.insertSelective(user);
-	}
-
-	/***
-	 * ページング検索
-	 * */
-	@Override
-	public List<User> findAllUser(int pageNum, int pageSize) {
-		PageHelper.startPage(pageNum, pageSize);
-		return userMapper.selectAllUser();
+	public int insert(User user) {
+		return userMapper.insert(user);
 	}
 
 	/***
@@ -40,7 +31,7 @@ public class UserServiceImpl implements UserService {
 	 */
 	@Override
 	public int delete(int no) {
-		return userMapper.deleteByPrimaryKey(no);
+		return userMapper.delete(no);
 	}
 
 	/***
@@ -49,7 +40,16 @@ public class UserServiceImpl implements UserService {
 	 */
 	@Override
 	public int update(User user) {
-		return userMapper.updateByPrimaryKeySelective(user);
+		return userMapper.update(user);
+	}
+
+	/***
+	 * ページング検索
+	 * */
+	@Override
+	public List<User> selectAll(int pageNum, int pageSize) {
+		PageHelper.startPage(pageNum, pageSize);
+		return userMapper.selectAll();
 	}
 
 	/**
@@ -66,8 +66,8 @@ public class UserServiceImpl implements UserService {
 	}
 
 	@Override
-	public int getUsernumber() {
-		return userMapper.getUsernumber();
+	public int getCount() {
+		return userMapper.getCount();
 	}
 
 	@Override

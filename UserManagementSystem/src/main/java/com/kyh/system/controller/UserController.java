@@ -52,8 +52,8 @@ public class UserController {
 		int page = Integer.parseInt(request.getParameter("page"));
 		int pageSize = Integer.parseInt(request.getParameter("rows")); // pageSize
 		int startRecord = (page - 1) * pageSize + 1;
-		int total = userService.getUsernumber();
-		List<User> userinforlist = userService.findAllUser(startRecord, pageSize);
+		int total = userService.getCount();
+		List<User> userinforlist = userService.selectAll(startRecord, pageSize);
 		Map<String, Object> resultMap = new HashMap<String, Object>();
 		resultMap.put("total", total - 1);
 		resultMap.put("rows", userinforlist);
@@ -103,7 +103,7 @@ public class UserController {
 			if (userService.checkExistenceByUserId(user) > 0) {
 				map.put("msg", "ユーザーは既に存在しているため、追加できません。");
 			} else {
-				userService.addUser(user);
+				userService.insert(user);
 				map.put("success", "true");
 			}
 		} catch (Exception e) {
