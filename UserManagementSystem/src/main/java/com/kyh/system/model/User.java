@@ -1,4 +1,4 @@
-package com.kyh.system.entity;
+package com.kyh.system.model;
 
 public class User {
 	

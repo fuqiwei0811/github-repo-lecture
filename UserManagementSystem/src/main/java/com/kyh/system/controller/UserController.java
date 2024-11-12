@@ -16,7 +16,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.ModelAndView;
 
-import com.kyh.system.entity.User;
+import com.kyh.system.model.User;
 import com.kyh.system.service.UserService;
 
 @Controller

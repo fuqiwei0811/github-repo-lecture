@@ -5,7 +5,7 @@ import java.util.List;
 import org.apache.ibatis.annotations.Mapper;
 import org.springframework.stereotype.Component;
 
-import com.kyh.system.entity.User;
+import com.kyh.system.model.User;
 
 @Component
 @Mapper
