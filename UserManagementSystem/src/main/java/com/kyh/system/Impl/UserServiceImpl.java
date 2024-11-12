@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 import com.github.pagehelper.PageHelper;
 import com.kyh.system.mapper.UserMapper;
 import com.kyh.system.model.User;
+import com.kyh.system.model.UserExample;
 import com.kyh.system.service.UserService;
 
 @Service(value = "userService")
@@ -31,7 +32,7 @@ public class UserServiceImpl implements UserService {
 	 */
 	@Override
 	public int delete(int no) {
-		return userMapper.delete(no);
+		return userMapper.deleteByPrimaryKey(no);
 	}
 
 	/***
@@ -40,7 +41,7 @@ public class UserServiceImpl implements UserService {
 	 */
 	@Override
 	public int update(User user) {
-		return userMapper.update(user);
+		return userMapper.updateByPrimaryKeySelective(user);
 	}
 
 	/***
@@ -49,7 +50,11 @@ public class UserServiceImpl implements UserService {
 	@Override
 	public List<User> selectAll(int pageNum, int pageSize) {
 		PageHelper.startPage(pageNum, pageSize);
-		return userMapper.selectAll();
+
+		UserExample example = new UserExample();
+		List<User> users = userMapper.selectByExample(example);
+
+		return users;
 	}
 
 	/**
@@ -57,7 +62,20 @@ public class UserServiceImpl implements UserService {
 	* */
 	@Override
 	public User getUserByUserIdAndPassword(User user) {
-		return userMapper.selectByUserIdAndPassword(user);
+
+		UserExample example = new UserExample();
+		UserExample.Criteria criteria = example.createCriteria();
+
+		criteria.andUseridEqualTo(user.getUserid());
+		criteria.andPasswordEqualTo(user.getPassword());
+
+		List<User> users = userMapper.selectByExample(example);
+
+		if (!users.isEmpty()) {
+			return users.get(0);
+		} else {
+			return null;
+		}
 	}
 
 	@Override
@@ -67,11 +85,18 @@ public class UserServiceImpl implements UserService {
 
 	@Override
 	public int getCount() {
-		return userMapper.getCount();
+		UserExample example = new UserExample();
+		int count = (int) userMapper.countByExample(example);
+		return count;
 	}
 
 	@Override
 	public int checkExistenceByUserId(User user) {
-		return userMapper.checkExistenceByUserId(user);
+		UserExample example = new UserExample();
+		UserExample.Criteria criteria = example.createCriteria();
+		criteria.andUseridEqualTo(user.getUserid());
+		int count = (int) userMapper.countByExample(example);
+
+		return count;
 	}
 }
