@@ -27,7 +27,7 @@ public interface UserMapper {
 	@Select("select count(*) from t_user")
 	int getCount();
 
-	@Select("SELECT * FROM t_user")
+	@Select("select * from t_user")
 	List<User> selectAll();
 
 }
