@@ -1,8 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.kyh.system.mapper.UserMapper">
-	<resultMap id="BaseResultMap"
-		type="com.kyh.system.entity.User">
+	<resultMap id="BaseResultMap" type="User">
 		<id column="no" jdbcType="INTEGER" property="no" />
 		<result column="userid" jdbcType="VARCHAR" property="userid" />
 		<result column="username" jdbcType="VARCHAR"
@@ -24,16 +23,15 @@
 		where no = #{no,jdbcType=INTEGER}
 	</select>
 
-	<select id="checkExistenceByUserId"
-		parameterType="com.kyh.system.entity.User"
+	<select id="checkExistenceByUserId" parameterType="User"
 		resultType="java.lang.Integer">
 		select count(userid) from t_user
 		where userid =
 		#{userid,jdbcType=VARCHAR}
 	</select>
 
-	<select id="selectByUserIdAndPassword"
-		parameterType="com.kyh.system.entity.User" resultMap="BaseResultMap">
+	<select id="selectByUserIdAndPassword" parameterType="User"
+		resultMap="BaseResultMap">
 		select
 		<include refid="Base_Column_List" />
 		from t_user
@@ -52,8 +50,7 @@
 		where no = #{no,jdbcType=INTEGER}
 	</delete>
 
-	<insert id="insertSelective"
-		parameterType="com.kyh.system.entity.User">
+	<insert id="insertSelective" parameterType="User">
 		insert into t_user
 		<trim prefix="(" suffix=")" suffixOverrides=",">
 			<if test="userid != null">
@@ -84,8 +81,8 @@
 			</if>
 		</trim>
 	</insert>
-	<update id="updateByPrimaryKeySelective"
-		parameterType="com.kyh.system.entity.User">
+
+	<update id="updateByPrimaryKeySelective" parameterType="User">
 		update t_user
 		<set>
 			<trim suffixOverrides=",">
