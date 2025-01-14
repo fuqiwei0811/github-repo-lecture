@@ -32,7 +32,7 @@
 				</tr>
 				<tr>
 					<td>電話番号：</td>
-					<td><input type="text" id="phone" th:value="${user.phone}"></input></td>
+					<td><input type="tel" id="phone" th:value="${user.phone}"></input></td>
 				</tr>
 				<tr>
 					<td style="text-align:center;" colspan="2">
@@ -52,6 +52,20 @@
 	<script type="text/javascript" src="/easyui/jquery.easyui.min.js"></script>
 	<script>
 		function updateMyInfo() {
+
+			// バリエーションチェックを行います。
+			var phone = $('#phone').val();
+			var pattern = /^\d{3}-\d{4}-\d{4}$/;
+
+			if (!pattern.test(phone)) {
+				$.messager.show({
+					title: 'エラー',
+					msg: '電話番号はXXX-XXXX-XXXXの形式で入力してください。'
+				});
+				return;  // フォーム送信を中止
+			}
+
+
 			$.post('/user/updateMyInfo',
 				{
 					no: $('#hiddenNo').val(),
